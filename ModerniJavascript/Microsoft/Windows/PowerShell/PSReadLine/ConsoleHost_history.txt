@@ -1,0 +1,5 @@
+npm list @playwright/test
+npm install -D @playwright/test
+node -v
+npm -v
+npm config set proxy http://proxy-server:port

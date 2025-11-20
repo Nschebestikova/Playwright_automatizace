@@ -1,0 +1,23 @@
+nav ul {
+    padding: 0px;
+}
+
+nav ul li {
+    display: inline-block;
+    list-style: none;
+}
+
+nav li a {
+    text-decoration:none;
+    font-size: 20px;
+    border: 2px solid #ae9959;
+    padding: 5px 15px;
+    border-radius: 100px;
+    color: white;
+    background: #75673c;
+}
+
+nav li a:hover {
+    background: #ae9959;
+    
+}
