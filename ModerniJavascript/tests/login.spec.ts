@@ -31,7 +31,7 @@ Zadá platné heslo.
 Klikne login.
 Ověří, že se zobrazila chyba. */
 
-import test, { expect } from './fixtures/basePages';
+import test, { expect } from './Fixtures/basePages';
 
 // Testy pro login stránku
 test.describe('Login Tests', () => {
