@@ -4,12 +4,12 @@ export class DemoQAHomePage {
     page: Page;
     bookStoreCard: Locator;
     headerTitle: Locator;
+    searchBox: Locator;
 
     constructor(page: Page) {
         this.page = page;
         this.bookStoreCard = page.locator('xpath=//div[@class="category-cards"]/div[5]');
         this.headerTitle = page.locator('div.main-header');
-        this.navigate();
         this.searchBox = page.locator('#searchBox');
     }
 

@@ -11,7 +11,7 @@ Ověřit, že každá kniha obsahuje povinná pole (title, author, isbn, …)
 */
 
 test('Ověření API odpovědi se seznamem knih (status a schéma)', async ({ request }) => {
-  const response = await request.get('https://demoqa.com/BookStore/v1/Books');
+  const response = await request.get('https://demoqa.com/BookStore/v1/Books'); // tohle zde musím mít protože tohle je GET request na endpoint vracející seznam knih
   
   // Ověření status kódu
   expect(response.status()).toBe(200);
@@ -26,7 +26,9 @@ test('Ověření API odpovědi se seznamem knih (status a schéma)', async ({ re
     expect(book).toHaveProperty('title'); //očekává naplnění dat v book - a to have property znamená funkci, která ověřuje, že daný objekt má danou vlastnost
     expect(book).toHaveProperty('author'); //očekává naplnění dat v book - a to have property znamená funkci, která ověřuje, že daný objekt má danou vlastnost
     expect(book).toHaveProperty('isbn');
-    expect(book).toHaveProperty('subtitle');
+    expect(book).toHaveProperty('title');
+    expect(book).toHaveProperty('subTitle');
+    expect(book).toHaveProperty('author');
     expect(book).toHaveProperty('publish_date');
     expect(book).toHaveProperty('publisher');
     expect(book).toHaveProperty('pages');
@@ -52,14 +54,14 @@ test('Přidání knihy do uživatelské kolekce pomocí API a ověření', async
   const api = await request.newContext();
 
   // Login + získání tokenu
-  const loginResponse = await api.post('https://demoqa.com/Account/v1/Login', {
+  const loginResponse = await api.post('https://demoqa.com/Account/v1/Login', { // tohle zaručuje že se přihlásím a získám token a to způsobem POST - jedná se o funkce Login a tu zjistím přes nastavení const = protože je to neměnná proměnná, pokud se přihlašuji přes uživatelelské jméno a heslo
     data: {
       userName: 'testuser',
       password: 'Test@1234'
     }
   });
 
-  expect(loginResponse.status()).toBe(200);
+  expect(loginResponse.status()).toBe(200); //tohle mi zajistí že ověřím status kód 200 OK - nejprve provolám expect a pak status funkci a toBe znamená že to má být rovno 200 = toBe jako rovno
 
   const loginData = await loginResponse.json();
   const token = loginData.token;
@@ -89,4 +91,59 @@ test('Přidání knihy do uživatelské kolekce pomocí API a ověření', async
 
   // Ověření, že vrácená kniha má správné ISBN
   expect(addBookData.books[0].isbn).toBe(isbnToAdd);
+});
+
+
+
+
+///******************************************** */
+/* Scénář 6: Odebrání tedy vymazání knihy z uživatelské kolekce pomocí API a ověření 
+Cíl: Odeslat DELETE požadavek pro odebrání knihy z uživatelské kolekce a ověřit úspěch.
+Kroky:
+Provést autentizaci nebo použít testovací token
+Pomocí APIRequestContext odeslat DELETE request na endpoint pro odebrání knihy
+(např. https://demoqa.com/BookStore/v1/Book) s JSON payloadem obsahujícím ISBN a userID/token
+Ověřit status 204 No Content nebo 200 OK
+Ověřit, že odpověď potvrzuje úspěšné odebrání knihy
+*/
+
+test('Odebrání knihy z uživatelské kolekce pomocí API a ověření', async ({ request }) => {
+  // Login + získání tokenu
+  const loginResponse = await request.post('https://demoqa.com/Account/v1/Login', {
+    data: {
+      userName: 'testuser',
+      password: 'Test@1234'
+    }
+  });
+  expect(loginResponse.status()).toBe(200);
+
+  const { token, userId } = await loginResponse.json();
+
+  // ISBN k odebrání - toto je proměnná která obsahuje ISBN knihy kterou chci odebrat, proto zde musí být stejné jako ta kterou jsem přidal v předchozím testu - avšak je to constatní proměnná protože se to nemění
+  const isbnToRemove = '9781449325862';
+
+  // DELETE request pro odebrání knihy - musím zde mít deleteResponse protože to je odebrání knihy a nemůže tám být jiné response
+  const deleteResponse = await request.delete('https://demoqa.com/BookStore/v1/Book', {
+    headers: {
+      Authorization: `Bearer ${token}` // {token} má funkci autorizace pro přístup k API, ten dolarový znak zde znamená že se jedná o šablonový řetězec kde se může vložit proměnná do řetězce = šablonový řetězec znamená že se používají zpětné apostrofy místo obyčejných uvozovek a umožňuje vkládání výrazů do řetězce pomocí ${expression} což je užitečné pro dynamické vytváření řetězců
+    },
+    data: {
+      isbn: isbnToRemove,
+      userId: userId
+    }
+  });
+
+  expect(deleteResponse.status()).toBe(204); //toBe znamená že to má být rovno 204 No Content = toBe jako rovno
+
+  // Kkontrola že kniha již není v kolekci
+  const userBooksResponse = await request.get(`https://demoqa.com/BookStore/v1/Books?userId=${userId}`, { //userBooksResponse znamená že to je response z GET requestu na endpoint vracející knihy uživatele
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  expect(userBooksResponse.status()).toBe(200);
+  const userBooks = await userBooksResponse.json();
+  if (Array.isArray(userBooks.books)) {
+    expect(userBooks.books.find((b: any) => b.isbn === isbnToRemove)).toBeUndefined();
+  }
 });

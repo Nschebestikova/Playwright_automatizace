@@ -1,3 +1,5 @@
+// Playwrigh configurace slouží k nastavení různých parametrů pro běh testů pomocí Playwright frameworku například nastavení adresy webu, časových limitů, prohlížečů atd.
+
 import { defineConfig, devices } from '@playwright/test';
 
 /**

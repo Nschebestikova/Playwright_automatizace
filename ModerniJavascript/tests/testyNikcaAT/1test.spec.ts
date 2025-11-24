@@ -65,13 +65,18 @@ Porovnávání dat ve více stavech */
 
 // TEST 3 - Validace stránkování
 test('Validace stránkování', async ({ page }) => {
-  await page.goto('https://demoqa.com');
-  await page.locator('xpath=//div[@class="category-cards"]/div[5]').click();
-  await expect(page.locator('div.main-header')).toHaveText('Book Store');
+  await page.goto('https://demoqa.com/books');
+  await page.waitForLoadState('networkidle');
+  // Kliknutí na select pro výběr počtu řádků
+  await page.locator('select[aria-label="rows per page"]').selectOption('5');
+  await page.waitForTimeout(1000);
+  // Kliknutí na tlačítko Next
   await page.locator('.-next').click();
   await page.waitForTimeout(2000);
   await expect(page.getByText('Programming JavaScript Applications')).toBeVisible();
   await expect(page.getByText('Eloquent JavaScript, Second Edition')).toBeVisible();
-  await expect(page.getByText('Understanding ECMAScript 6')).toBeVisible();
-  await page.locator('.Previous').click();
+  await expect(page.getByText('Understanding ECMAScript 6')).toBeVisible(); // tohle je ověření že se na další stránce skutečně nachází tyto knihy
+  // Kliknutí na tlačítko Previous
+  await page.locator('.-previous').click();
+  await expect (page.getByText('Git Pocket Guide')).toBeVisible(); //ověření že se vracím na předchozí stránku a nachází se tam tato kniha
 });
