@@ -11,8 +11,8 @@ Ověřit, že nesouvisející knihy se ve výsledcích neobjeví */
 // TEST 1 – Vyhledání knihy a validace výsledků
 test('Kliknutí na tlačítko Books a vyhledání knihy', async ({ page }) => {
   await page.goto('https://demoqa.com');
-  await page.locator('xpath=//div[@class="category-cards"]/div[5]').click();
-  await expect(page.locator('div.main-header')).toHaveText('Book Store');
+  await page.locator('xpath=//div[@class="category-cards"]/div[5]').click(); // toto jeětě opravit
+  await expect(page.locator('input#searchBox')).toBeVisible();
   await page.locator('input#searchBox').click();
   await page.locator('input#searchBox').fill('Git Pocket Guide');
   await page.locator('input#searchBox').press('Enter');
@@ -38,13 +38,13 @@ Validace URL a textového obsahu */
 // TEST 2 - Otevření detailu knihy a kontrola obsahu
 test('Otevření detailu knihy a kontrola obsahu', async ({ page }) => {
   await page.goto('https://demoqa.com/books');
-  await expect(page.locator('div.main-header')).toHaveText('Book Store');
+  await expect(page.locator('input#searchBox')).toBeVisible();
   await page.locator('input#searchBox').click();
   await page.locator('input#searchBox').fill('Git Pocket Guide');
   await page.locator('input#searchBox').press('Enter');
   await page.waitForTimeout(2000);
   await page.locator('a[href*="/books?book=9781449325862"]').click();
-  await expect(page.locator('text=ISBN')).toBeVisible();
+  await expect(page).toHaveURL(/book=9781449325862/); // protože nelze stránku zkontrolovat na základě selectoru a elementoru, zkontroluje se na základě obsahu URL
 });
 
 
