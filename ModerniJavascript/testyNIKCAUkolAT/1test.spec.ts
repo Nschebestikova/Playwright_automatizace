@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { appendFile } from 'fs/promises';
 
 /* Vyhledání knihy a validace výsledků
 Cíl: Automatizovat vyhledání konkrétního názvu knihy a ověřit výsledky.
@@ -81,35 +82,45 @@ test('Validace stránkování', async ({ page }) => {
 
 
 
-
-
-
-
-
-
-
 /* ********** */
 /* Ověření API odpovědi se seznamem knih (status a schéma)
-
 Cíl: Odeslat GET požadavek pomocí APIRequestContext a validovat odpověď.
-
 Kroky:
 Pomocí Playwright APIRequestContext odeslat GET request na endpoint vracející seznam knih
 (např. https://demoqa.com/BookStore/v1/Books)
-
 Ověřit status 200 OK
 Ověřit, že JSON obsahuje neprázdné pole knih
 Ověřit, že každá kniha obsahuje povinná pole (title, author, isbn, …)
-Ověřované dovednosti:
-Práce s API requesty
-Validace status kódů a těla odpovědi
-Kontrola přítomnosti klíčů nebo jednoduchého JSON schématu */
+ */
 
-
-
-
-
-
+const request = await playwright.request.newContext(); //TÍMTO Playwright umí volat API mimo UI pomocí APIRequestContext A NEMUSÍM TAK PRO VOLÁNÍ API OTEVÍRAT PROHLÍŽEČ A OVĚŘOVAT POMOCÍ PAGE ... JE TO PŘÍKAZ CO POMÁHÁ SPPUŠTĚT API TESTY
+test('Ověření API odpovědi se seznamem knih (status a schéma)', async ({}) => {
+  const response = await request.get('https://demoqa.com/bookStore/BookStoreV1Bookhttps://demoqa.com/swagger/None#/BookStore/BookStoreV1BooksGet'); // Odeslání GET požadavku na endpoint vracející seznam knih
+  expect(response.status()).toBe(200); // Tímto ověříme, že status kód nám vrací 200 ok
+  const data = await response.json(); // Získání JSON těla odpovědi
+  expect(data.books.length).toBeGreaterThan(0); // Ověření, že pole knih není prázdné
+  data.books.forEach((book: {  //ověření, že každá kniha obsahuje povinná pole a jaké to jsou datové typy
+  title: string; 
+  author: string; 
+  isbn: string; 
+  subtitle: string; 
+  publish_date: string; 
+  publisher: string; 
+  pages: number; 
+  description: string; 
+  website: string;
+}) => {
+    expect(book).toHaveProperty('title'); 
+    expect(book).toHaveProperty('author');
+    expect(book).toHaveProperty('isbn');
+    expect(book).toHaveProperty('subtitle'); 
+    expect(book).toHaveProperty('publish_date'); 
+    expect(book).toHaveProperty('publisher'); 
+    expect(book).toHaveProperty('pages'); 
+    expect(book).toHaveProperty('description'); 
+    expect(book).toHaveProperty('website'); 
+  }
+});
 
 
 
@@ -122,10 +133,40 @@ Kroky:
 Provést autentizaci nebo použít testovací token
 Pomocí APIRequestContext odeslat POST request na endpoint pro přidání knihy
 (např. https://demoqa.com/BookStore/v1/Books)s JSON payloadem obsahujícím ISBN a userID/token
-
 Ověřit status 201 Created nebo 200 OK
 Ověřit, že odpověď potvrzuje úspěšné přidání knihy
-Ověřované dovednosti:
-POST request s JSON payloadem
-Práce s autentizací
-Validace odpovědi u akce měnící stav */
+*/
+const loginResponse = await appendFile.post('https://demoqa.com/swagger/None#/Account/AccountV1LoginPost', {
+  data: {
+    userName: 'testuser',
+    password: 'Test@1234'
+  }
+});
+const loginData = await loginResponse.json();
+const token = loginData.token; 
+const addBookResponse = await api.post(
+  'https://demoqa.com/BookStore/v1/Books',
+  {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    data: {
+      userId: userId,
+      collectionOfIsbns: [
+        { isbn: '9781449325862' }
+      ]
+    }
+  }
+);
+
+test('Přidání knihy do uživatelské kolekce pomocí API a ověření', async ({}) => {
+  const response = await request.post('https://demoqa.com/swagger/None#/BookStore/BookStoreV1BooksPost'); // Odeslání post požadavku a vložení knihy do uživatelské kolekce
+  expect(response.status()).toBe(201); 
+  const data = await response.json(); // Získání JSON těla odpovědi - toto musíme vždy
+
+ const addBookData = await addBookResponse.json();
+    expect(addBookData.books[0].isbn).toBe(isbn); // Ověření, že přidaná kniha má správné ISBN
+});
+
+
+ 
