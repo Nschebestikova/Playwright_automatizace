@@ -1,112 +1,80 @@
-/* Popis celého testovacího souboru
-beforeEach
-Před každým testem se otevře přihlašovací stránka pomocí loginPage.gotoLoginPage().
-
-Test 1 – Successful login
-Otevře login stránku.
-Přihlásí se pomocí správného uživatele a hesla.
-Ověří, že URL ukazuje na /inventory.html.
-
-Test 2 – Valid username + invalid password
-Zadá platné uživatelské jméno.
-Zadá neplatné heslo.
-Klikne na login.
-Ověří, že se zobrazila chyba.
-Test je anotovaný pomocí test.info().annotations.
-
-Test 3 – Invalid username + valid password
-Zadá neplatné uživatelské jméno.
-Zadá platné heslo.
-Klikne na login.
-Ověří, že se zobrazila chyba.
-
-Test 4 – Blank fields
-Nevyplní žádný údaj.
-Klikne login.
-Ověří, že se zobrazila chyba o povinných údajích.
-
-Test 5 – Locked out user
-Zadá locked out username.
-Zadá platné heslo.
-Klikne login.
-Ověří, že se zobrazila chyba. */
-
 import test, { expect } from './Fixtures/basePages';
-import { LoginPage } from './Fixtures/pages/LoginPage';
 
 // Testy pro login stránku
 test.describe('Login Tests', () => {
-  test.beforeEach(async ({ page }) => { 
-    const loginPage = new LoginPage(page);
-    await loginPage.gotoLoginPage();
+  test.beforeEach(async ({ page }) => {
+    await page.goto('https://www.saucedemo.com/');
   });
-  });
-  test.only('Successful login', async ({ page }) => { 
-    const loginPage = new LoginPage(page);
-    await loginPage.gotoLoginPage();                        // otevření login stránky
-    await loginPage.login();                                // přihlášení platným uživatelem
-    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html'); // kontrola URL
-  });
-    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html'); // kontrola URL
-  test.skip('Cannot login with valid username and invalid password', async ({ page, browserName }) => { 
-    const loginPage = new LoginPage(page);
 
-  // Test 2: Platný username + neplatné heslo - skip znamená, že test nebude spuštěn
-  test.skip('Cannot login with valid username and invalid password', async ({ page, loginPage, browserName }) => { 
-    // anotace skip pro konkrétní prohlížeč - znamená, že test se nespustí v tom prohlížeči
-    test.skip(browserName === 'firefox', 'Still working on it'); 
-    // anotace testu pro report
+  // Test 1: Úspěšné přihlášení se správnými údaji
+  test('Successful login', async ({ page }) => {
+    await page.locator('input#user-name').fill('standard_user');
+    await page.locator('input#password').fill('secret_sauce');
+    await page.locator('input#login-button').click();
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+  });
+
+  // Test 2: Platný username + neplatné heslo
+  test.skip('Cannot login with valid username and invalid password', async ({ page, browserName }) => {
+    test.skip(browserName === 'firefox', 'Still working on it');
+    
     test.info().annotations.push({
       type: 'Test',
       description: 'This test will pass if the user is not able to login with valid username and invalid password'
     });
 
-    // krok 1: zadání správného username
     await test.step('Enter valid username', async () => {
-      await loginPage.enterValidUserName();
+      await page.locator('input#user-name').fill('standard_user');
     });
 
-    // krok 2: zadání chybného hesla
     await test.step('Enter invalid password', async () => {
-      await loginPage.enterInvalidPassword();
+      await page.locator('input#password').fill('wrong_password');
     });
 
-    // krok 3: kliknutí na login button
     await test.step('Click login button', async () => {
-      await loginPage.clickLoginButton();
+      await page.locator('input#login-button').click();
     });
 
-    // krok 4: ověření zobrazení chybové hlášky
     await test.step('Check error message visibility', async () => {
-      await expect(
-        loginPage.invalidCredentialsErrorMessage,
-        'Can not find login error message'
-      ).toBeVisible();
-  test.fixme('Cannot login with invalid username and valid password', async ({ page }) => { 
-    const loginPage = new LoginPage(page);
-    await loginPage.enterInvalidUserName();                   // zadání neplatného jména
-    await loginPage.enterValidPassword();                     // zadání platného hesla
-    await loginPage.clickLoginButton();                       // odeslání přihlášení
-    await expect(loginPage.invalidCredentialsErrorMessage).toBeVisible(); // očekávaná chyba
+      await expect(page.locator('[data-test="error"]')).toBeVisible();
+    });
   });
-    await loginPage.enterValidPassword();                     // zadání platného hesla
-  test('Cannot login with blank fields @slow', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.clickLoginButton();                       // pokus o přihlášení bez údajů
-    await expect(loginPage.requiredCredentialsErrorMessage).toBeVisible(); // chyba o prázdných polích
+
+  // Test 3: Neplatný username + platné heslo
+  test.fixme('Cannot login with invalid username and valid password', async ({ page }) => {
+    await page.locator('input#user-name').fill('invalid_user');
+    await page.locator('input#password').fill('secret_sauce');
+    await page.locator('input#login-button').click();
+    await expect(page.locator('[data-test="error"]')).toBeVisible();
   });
-  // Test 4: Nevyplněná pole - anotace slow znamená, že test může trvat déle, test zpomalí o několik sekund a @slow znamená, že test je označen jako pomalý
-  test('Cannot login with locked out user @fast', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.enterInvalidUserName();                   // zde bude locked out username
-    await loginPage.enterValidPassword();                     // platné heslo
-    await loginPage.clickLoginButton();                       // pokus o login
-    await expect(loginPage.invalidCredentialsErrorMessage).toBeVisible(); // chyba
+
+  // Test 4: Prázdná pole
+  test('Cannot login with blank fields', async ({ page }) => {
+    await page.locator('input#login-button').click();
+    await expect(page.locator('[data-test="error"]')).toBeVisible();
   });
-  test('Cannot login with locked out user @fast', async ({ page, loginPage }) => {
-    await loginPage.enterInvalidUserName();                   // zde bude locked out username
-    await loginPage.enterValidPassword();                     // platné heslo
-    await loginPage.clickLoginButton();                       // pokus o login
-    await expect(loginPage.invalidCredentialsErrorMessage).toBeVisible(); // chyba
+
+
+
+  // Další mé přidané negativní testy 
+  // Test 5: Locked out user
+  test('Cannot login with locked out user', async ({ page }) => {
+    await page.locator('input#user-name').fill('locked_out_user');
+    await page.locator('input#password').fill('secret_sauce');
+    await page.locator('input#login-button').click();
+    await expect(page.locator('[data-test="error"]')).toBeVisible();
+  });
+
+  // Test 6: Prázdné heslo
+  test('Cannot login with blank field - password', async ({ page }) => {
+    await page.locator('input#user-name').fill('standard_user');
+    await page.locator('input#login-button').click();
+    await expect(page.locator('[data-test="error"]')).toBeVisible();
+  });
+  // Test 6: Prázdné username
+  test('Cannot login with blank field - username', async ({ page }) => {
+    await page.locator('input#password').fill('secret_sauce');
+    await page.locator('input#login-button').click();
+    await expect(page.locator('[data-test="error"]')).toBeVisible();
   });
 });

@@ -1,67 +1,50 @@
-import {Locator,Page} from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
-export class HomePage{
+export class DemoQAHomePage {
     page: Page;
-    menu: Locator;
-    title: Locator;
-    item: Locator;
-    addToCart: Locator;
-    cartBadge: Locator;
-    productPage: Locator;
-    backToProductsButton: Locator;
-
-
-    constructor(page: Page){
-        this.page = page;
-        this.menu = page.locator('#react-burger-menu-btn');
-        this.title = page.getByText('Swag Labs');
-        this.item = page.locator('#inventory_item_name');
-        this.addToCart = page.locator('#add-to-cart-sauce-labs-backpack');
-        this.cartBadge = page.locator('.shopping_cart_badge');
-        this.productPage = page.getByText('Sauce Labs Backpack');
-        this.backToProductsButton = page.locator('#back-to-products');
-    }
-
-//vstup na stránku
-    async clickOnMenu () {
-        await this.menu.click();
-    }
-
-    async clickItem() {
-        await this.item.click();
-    }
-
-    async clickOnaddToCart() {
-        await this.addToCart.click();
-    }
-
-}
-
-
-export class CartPage {
-    page: Page;
-    cartTitle: Locator;
-    checkoutButton: Locator;
-    continueShoppingButton: Locator;
-    removeItemButton: Locator;
+    bookStoreCard: Locator;
+    headerTitle: Locator;
 
     constructor(page: Page) {
         this.page = page;
-        this.cartTitle = page.getByText('Your Cart');
-        this.checkoutButton = page.locator('#checkout');
-        this.continueShoppingButton = page.locator('#continue-shopping');
-        this.removeItemButton = page.locator('#remove-sauce-labs-backpack');
+        this.bookStoreCard = page.locator('xpath=//div[@class="category-cards"]/div[5]');
+        this.headerTitle = page.locator('div.main-header');
+        this.navigate();
+        this.searchBox = page.locator('#searchBox');
     }
 
-    async clickCheckoutButton() {
-        await this.checkoutButton.click();
+    // Vstup na stránku
+    async navigate() {
+        await this.page.goto('https://demoqa.com/');
     }
 
-    async clickContinueShoppingButton() {
-        await this.continueShoppingButton.click();
+    async clickItem() {
+        await this.bookStoreCard.click();
     }
 
-    async removeItemFromCart() {
-        await this.removeItemButton.click();
+    async getHeaderTitleText() {
+        return await this.headerTitle.textContent();
+    }
+}
+
+export class BookStorePage {
+    page: Page;
+    searchBox: Locator;
+    bookTitleInTable: Locator;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.searchBox = page.locator('#searchBox');
+        this.bookTitleInTable = page.locator('div.rt-td');
+    }
+
+    async searchBook(title: string) {
+        await this.searchBox.click();
+        await this.searchBox.fill(title);
+        await this.searchBox.press('Enter');
+    }
+
+    async validateBookVisible(title: string) {
+        await expect(this.bookTitleInTable.filter({ hasText: title })).toBeVisible();
     }
 }

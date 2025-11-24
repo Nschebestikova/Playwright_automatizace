@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { appendFile } from 'fs/promises';
+import { appendFile } from 'fs/promises'; // toto zde musí být pro volání API pomocí APIRequestContext
 
 /* Vyhledání knihy a validace výsledků
 Cíl: Automatizovat vyhledání konkrétního názvu knihy a ověřit výsledky.
@@ -13,7 +13,7 @@ Ověřit, že nesouvisející knihy se ve výsledcích neobjeví */
 test('Kliknutí na tlačítko Books a vyhledání knihy', async ({ page }) => {
    await page.goto('https://demoqa.com');
     await page.locator('xpath=//div[@class="category-cards"]/div[5]').click(); //kliknutí na button Book Store Application 
-    expect(page.locator('div.main-header')).toHaveText('Book Store'); //validace, že se skutečně nacházím na stránce Books 
+    await expect(page.locator('div.main-header')).toHaveText('Book Store'); //validace, že se skutečně nacházím na stránce Books 
     await page.locator('input#searchBox').click(); //Kliknu do vyhledávacího pole 
     await page.locator('input#searchBox').fill('Git Pocket Guide'); //Do vyhledávacího pole zadám název knihy (např. „Git Pocket Guide“) 
     await page.locator('input#searchBox').press('Enter'); //stisknu Enter pro vyhledání 
@@ -44,7 +44,7 @@ test('Otevření detailu knihy a kontrola obsahu', async ({ page }) => {
     await page.locator('input#searchBox').fill('Git Pocket Guide'); //Do vyhledávacího pole zadám název knihy (např. „Git Pocket Guide“) 
     await page.locator('input#searchBox').press('Enter'); //stisknu Enter pro vyhledání 
     await page.waitForTimeout(2000); //čekání alespoň 2 sekundy, aby se stihly načíst výsledky před ověřením
-    await page.locator('a[href*´="/books?book=9781449325862"´]').click(); //clikne přímo na odkaz knihy a otevře tak knihu
+    await page.locator('a[href*="/books?book=9781449325862"]').click(); //clikne přímo na odkaz knihy a otevře tak knihu
     await expect(page.locator('text=ISBN')).toBeVisible();   // Ověřit, že se zobrazily detaily knihy
 
 });
@@ -79,9 +79,6 @@ test('Validace stránkování', async ({ page }) => {
 });
 
 
-
-
-
 /* ********** */
 /* Ověření API odpovědi se seznamem knih (status a schéma)
 Cíl: Odeslat GET požadavek pomocí APIRequestContext a validovat odpověď.
@@ -93,9 +90,10 @@ Ověřit, že JSON obsahuje neprázdné pole knih
 Ověřit, že každá kniha obsahuje povinná pole (title, author, isbn, …)
  */
 
-const request = await playwright.request.newContext(); //TÍMTO Playwright umí volat API mimo UI pomocí APIRequestContext A NEMUSÍM TAK PRO VOLÁNÍ API OTEVÍRAT PROHLÍŽEČ A OVĚŘOVAT POMOCÍ PAGE ... JE TO PŘÍKAZ CO POMÁHÁ SPPUŠTĚT API TESTY
 test('Ověření API odpovědi se seznamem knih (status a schéma)', async ({}) => {
-  const response = await request.get('https://demoqa.com/bookStore/BookStoreV1Bookhttps://demoqa.com/swagger/None#/BookStore/BookStoreV1BooksGet'); // Odeslání GET požadavku na endpoint vracející seznam knih
+  const { request } = await import('@playwright/test');
+  const apiRequest = await request.newContext();
+  const response = await apiRequest.get('https://demoqa.com/BookStore/v1/Books');
   expect(response.status()).toBe(200); // Tímto ověříme, že status kód nám vrací 200 ok
   const data = await response.json(); // Získání JSON těla odpovědi
   expect(data.books.length).toBeGreaterThan(0); // Ověření, že pole knih není prázdné
@@ -119,7 +117,7 @@ test('Ověření API odpovědi se seznamem knih (status a schéma)', async ({}) 
     expect(book).toHaveProperty('pages'); 
     expect(book).toHaveProperty('description'); 
     expect(book).toHaveProperty('website'); 
-  }
+  });
 });
 
 
@@ -169,4 +167,7 @@ test('Přidání knihy do uživatelské kolekce pomocí API a ověření', async
 });
 
 
- 
+ await page.goto('chrome-error://chromewebdata/');
+ await page.getByRole('button', { name: 'Načíst znovu' }).click();
+ await page.getByRole('button', { name: 'Načíst znovu' }).click();
+ await expect(page.locator('#reload-button')).toMatchAriaSnapshot(`- button "Načíst znovu"`);
