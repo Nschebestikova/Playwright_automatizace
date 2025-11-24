@@ -9,6 +9,6 @@ test.describe('Visual testing', () => {
 
   // Test 1: Visual testing
   test(' Visual test login page', async ({ page }) => { 
-    await expect(page).toHaveScreenshot({maxDiffPixels: 100});
+    await expect(page).toHaveScreenshot({maxDiffPixels: 100}); // porovnání screenshotu s referenčním obrázkem, povolených je max 100 rozdílných pixelů
   }); 
   })

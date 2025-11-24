@@ -32,20 +32,24 @@ Klikne login.
 Ověří, že se zobrazila chyba. */
 
 import test, { expect } from './Fixtures/basePages';
+import { LoginPage } from './Fixtures/pages/LoginPage';
 
 // Testy pro login stránku
 test.describe('Login Tests', () => {
-  // Každý test začíná otevřením login stránky
-  test.beforeEach(async ({ loginPage }) => { 
+  test.beforeEach(async ({ page }) => { 
+    const loginPage = new LoginPage(page);
     await loginPage.gotoLoginPage();
   });
-
-  // Test 1: Úspěšné přihlášení se správnými údaji - přidáním only určujeme, jaké testy se mají spustit (nechceme všechny totiž)
-  test.only('Successful login', async ({ page, loginPage }) => { 
+  });
+  test.only('Successful login', async ({ page }) => { 
+    const loginPage = new LoginPage(page);
     await loginPage.gotoLoginPage();                        // otevření login stránky
     await loginPage.login();                                // přihlášení platným uživatelem
     await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html'); // kontrola URL
   });
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html'); // kontrola URL
+  test.skip('Cannot login with valid username and invalid password', async ({ page, browserName }) => { 
+    const loginPage = new LoginPage(page);
 
   // Test 2: Platný username + neplatné heslo - skip znamená, že test nebude spuštěn
   test.skip('Cannot login with valid username and invalid password', async ({ page, loginPage, browserName }) => { 
@@ -78,24 +82,27 @@ test.describe('Login Tests', () => {
         loginPage.invalidCredentialsErrorMessage,
         'Can not find login error message'
       ).toBeVisible();
-    });
-  });
-
-  // Test 3: Neplatný username + platné heslo - fixme znamená, že test je označen jako nedokončený a nebude spuštěn
-  test.fixme('Cannot login with invalid username and valid password', async ({ page, loginPage }) => { 
+  test.fixme('Cannot login with invalid username and valid password', async ({ page }) => { 
+    const loginPage = new LoginPage(page);
     await loginPage.enterInvalidUserName();                   // zadání neplatného jména
     await loginPage.enterValidPassword();                     // zadání platného hesla
     await loginPage.clickLoginButton();                       // odeslání přihlášení
     await expect(loginPage.invalidCredentialsErrorMessage).toBeVisible(); // očekávaná chyba
   });
-
-  // Test 4: Nevyplněná pole - anotace slow znamená, že test může trvat déle, test zpomalí o několik sekund a @slow znamená, že test je označen jako pomalý
-  test('Cannot login with blank fields @slow', async ({ page, loginPage }) => {
-//    await loginPage.clickLoginButton();                       // pokus o přihlášení bez údajů
+    await loginPage.enterValidPassword();                     // zadání platného hesla
+  test('Cannot login with blank fields @slow', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.clickLoginButton();                       // pokus o přihlášení bez údajů
     await expect(loginPage.requiredCredentialsErrorMessage).toBeVisible(); // chyba o prázdných polích
   });
-  test.slow();
-  // Test 5: Locked out user - @fast znamená, že test je označen jako rychlý
+  // Test 4: Nevyplněná pole - anotace slow znamená, že test může trvat déle, test zpomalí o několik sekund a @slow znamená, že test je označen jako pomalý
+  test('Cannot login with locked out user @fast', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.enterInvalidUserName();                   // zde bude locked out username
+    await loginPage.enterValidPassword();                     // platné heslo
+    await loginPage.clickLoginButton();                       // pokus o login
+    await expect(loginPage.invalidCredentialsErrorMessage).toBeVisible(); // chyba
+  });
   test('Cannot login with locked out user @fast', async ({ page, loginPage }) => {
     await loginPage.enterInvalidUserName();                   // zde bude locked out username
     await loginPage.enterValidPassword();                     // platné heslo

@@ -7,7 +7,9 @@ const test = baseTest.extend<{
 }>({
     homePage: async ({ page }, use) => {
         await use (new HomePage(page));
-
+    },
+    homePage: async ({ page }, use) => {
+        await use (new HomePage(page));
     }
 });
 

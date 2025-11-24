@@ -11,16 +11,17 @@ test.describe('Screenshots', () => {
 
   // Test 1: Viewport screenshot
   test('Viewport screenshots', async ({ page }) => { 
-    await page.screenshot({ path: 'screenshots/viewport.png'});
+    await page.screenshot({ path: 'screenshots/viewport.png'}); // screenshot viditelné části stránky
   });
 
   /*Test 2: Full page screenshot*/
   test('Full page screenshot', async ({ page }) => { 
-    await page.screenshot({ path: 'screenshots/fullpage.png'});
+    await page.screenshot({ path: 'screenshots/fullpage.png', fullPage: true}); // screenshot celé stránky
   });
 
+  // Test 3: Element screenshot
   test('Element screenshot', async ({ page }) => { 
-    await page.locator('#item_4_img_link').screenshot({ path: 'screenshots/element.png'});
+    await page.locator('#item_4_img_link').screenshot({ path: 'screenshots/element.png'}); //
   });
 });
 
