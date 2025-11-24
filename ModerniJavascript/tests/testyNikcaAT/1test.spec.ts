@@ -1,0 +1,77 @@
+import { test, expect } from '@playwright/test'; 
+
+/* Vyhledání knihy a validace výsledků
+Cíl: Automatizovat vyhledání konkrétního názvu knihy a ověřit výsledky.
+Kroky:
+Přejít na stránku s knihami
+Do vyhledávacího pole zadat název knihy (např. „Git Pocket Guide")
+Ověřit, že výsledky obsahují alespoň jednu knihu se zadaným názvem
+Ověřit, že nesouvisející knihy se ve výsledcích neobjeví */
+
+// TEST 1 – Vyhledání knihy a validace výsledků
+test('Kliknutí na tlačítko Books a vyhledání knihy', async ({ page }) => {
+  await page.goto('https://demoqa.com');
+  await page.locator('xpath=//div[@class="category-cards"]/div[5]').click();
+  await expect(page.locator('div.main-header')).toHaveText('Book Store');
+  await page.locator('input#searchBox').click();
+  await page.locator('input#searchBox').fill('Git Pocket Guide');
+  await page.locator('input#searchBox').press('Enter');
+  await page.waitForTimeout(2000);
+  await expect(page.locator('div.rt-td:has-text("Git Pocket Guide")')).toBeVisible();
+});
+
+
+
+
+/* ******************************************** */
+/* Cíl: Kliknout na vybranou knihu v seznamu a ověřit její detaily.
+Kroky:
+Přejít na stránku s knihami
+Kliknout na odkaz s názvem knihy (např. „Learning JavaScript Design Patterns")
+Ověřit změnu URL na stránku detailu knihy
+Ověřit, že detaily (autor, vydavatel, ISBN) jsou zobrazené a správné
+Ověřované dovednosti:
+Navigace a práce s přechody mezi stránkami
+Ověřování více prvků na stránce
+Validace URL a textového obsahu */
+
+// TEST 2 - Otevření detailu knihy a kontrola obsahu
+test('Otevření detailu knihy a kontrola obsahu', async ({ page }) => {
+  await page.goto('https://demoqa.com/books');
+  await expect(page.locator('div.main-header')).toHaveText('Book Store');
+  await page.locator('input#searchBox').click();
+  await page.locator('input#searchBox').fill('Git Pocket Guide');
+  await page.locator('input#searchBox').press('Enter');
+  await page.waitForTimeout(2000);
+  await page.locator('a[href*="/books?book=9781449325862"]').click();
+  await expect(page.locator('text=ISBN')).toBeVisible();
+});
+
+
+
+/* ********************************************** */
+/* Validace stránkování
+Cíl: Otestovat ovládání stránkování a ověřit změny v seznamu knih.
+Kroky:
+Přechod na stránku s knihami
+Najít ovládací prvky stránkování (tlačítko “Next” nebo čísla stránek)
+Přepnout na další stránku
+Ověřit, že seznam knih se změnil (odlišné tituly)
+Volitelně: vrátit se na první stránku a ověřit původní seznam
+Ověřované dovednosti:
+Práce se stránkováním
+Ověřování dynamického obsahu
+Porovnávání dat ve více stavech */
+
+// TEST 3 - Validace stránkování
+test('Validace stránkování', async ({ page }) => {
+  await page.goto('https://demoqa.com');
+  await page.locator('xpath=//div[@class="category-cards"]/div[5]').click();
+  await expect(page.locator('div.main-header')).toHaveText('Book Store');
+  await page.locator('.-next').click();
+  await page.waitForTimeout(2000);
+  await expect(page.getByText('Programming JavaScript Applications')).toBeVisible();
+  await expect(page.getByText('Eloquent JavaScript, Second Edition')).toBeVisible();
+  await expect(page.getByText('Understanding ECMAScript 6')).toBeVisible();
+  await page.locator('.Previous').click();
+});

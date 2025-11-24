@@ -1,13 +1,12 @@
-import{test as baseTest} from '@playwright/test';
+import{test as baseTest, Page} from '@playwright/test';
 
-import { HomePage } from '../page-object/homePage';
+import { HomePage } from '../page-object_2/homePage';
 
 const test = baseTest.extend<{
     homePage: HomePage;
 }>({
-    homePage: async ({ page }, use) => {
-        await use (new HomePage(page));
-
+    homePage: async ({ page }: { page: Page }, use: (homePage: HomePage) => Promise<void>) => {
+        await use(new HomePage(page));
     }
 });
 
