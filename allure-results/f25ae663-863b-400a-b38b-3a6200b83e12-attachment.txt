@@ -1,0 +1,4 @@
+Name field is correctly filled.
+Email field is correctly filled.
+Current Address field is correctly filled.
+Permanent Address field is correctly filled.
