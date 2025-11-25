@@ -11,7 +11,7 @@ Ověřit, že nesouvisející knihy se ve výsledcích neobjeví */
 // TEST 1 – Vyhledání knihy a validace výsledků
 test('Kliknutí na tlačítko Books a vyhledání knihy', async ({ page }) => {
   await page.goto('https://demoqa.com');
-  await page.locator('xpath=//div[@class="category-cards"]/div[5]').click(); // toto jeětě opravit
+  await page.locator('.card-body:has-text("Book Store Application")').click(); // jedna z možností je zde vložit cad-body jako class co obsahuje text Book Store Application
   await expect(page.locator('input#searchBox')).toBeVisible();
   await page.locator('input#searchBox').click();
   await page.locator('input#searchBox').fill('Git Pocket Guide');
