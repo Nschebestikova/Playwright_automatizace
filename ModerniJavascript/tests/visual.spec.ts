@@ -1,4 +1,4 @@
-import test, { expect } from './fixtures/basePages';
+import test, { expect } from './fixtures/basePages.js';
 
 
 test.describe('Visual testing', () => {
